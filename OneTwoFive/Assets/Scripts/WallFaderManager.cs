@@ -1,6 +1,11 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// This class manages a list of objects with the wall fader script attached to them. It is responsible
+/// for fading these objects in and out based on the angle stored in their wall fader script.
+/// </summary>
 public class WallFaderManager : MonoBehaviour 
 {
 	CameraController cameraObj; //Used for getting the camera angle from CameraController.
@@ -68,6 +73,9 @@ public class WallFaderManager : MonoBehaviour
 			t += Time.deltaTime;
 			yield return null;
 		}
+
+		wallMat.color = new Color (wallMat.color.r, wallMat.color.g, wallMat.color.b, 0.0f);
+		wall.GetComponent<Renderer> ().material.color = wallMat.color;
 	}
 
 	//Fades a wall in to fully opaque.
@@ -90,5 +98,8 @@ public class WallFaderManager : MonoBehaviour
 			t += Time.deltaTime;
 			yield return null;
 		}
+
+		wallMat.color = new Color (wallMat.color.r, wallMat.color.g, wallMat.color.b, 1.0f);
+		wall.GetComponent<Renderer> ().material.color = wallMat.color;
 	}
 }

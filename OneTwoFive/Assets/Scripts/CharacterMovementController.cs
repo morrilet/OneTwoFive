@@ -23,13 +23,12 @@ public class CharacterMovementController : MonoBehaviour
 		Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 		RaycastHit hit = new RaycastHit ();
 
-		foreach (GameObject floor in GameObject.FindGameObjectsWithTag("Floor")) 
+		Physics.Raycast (ray, out hit, Mathf.Infinity);
+		if (hit.transform != null) 
 		{
-			if (floor.GetComponent<Collider> ().Raycast (ray, out hit, Mathf.Infinity)) 
-			{
-				return hit.point;
-			}
+			if(hit.transform.tag == "Floor")
+			return hit.point;
 		}
-		return this.transform.position;
+		return agent.destination;
 	}
 }
