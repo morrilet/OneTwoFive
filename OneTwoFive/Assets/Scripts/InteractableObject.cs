@@ -2,16 +2,32 @@
 using System.Collections;
 
 //This was done real quick and dirty. If there's time, clean it up some.
+//12/7/16 UPDATE: Still super dirty, but roughly working.
 public class InteractableObject : MonoBehaviour 
 {
-	public delegate void Interaction();
-	public event Interaction InteractionEnabled;
+	private delegate void InteractionAction();
+	private event InteractionAction StartInteraction;
 
 	public Vector3 interactionPosition; //Where the navmesh agent goes to when the object is clicked.
+	private const float BUTTONPRESSDURATION = 2.5f;
+	private NavMeshAgent playerNavMeshAgent;
 
 	void Start()
 	{
-		InputManager.OnLMBDown += TryMoveToInteractionPosition;
+		playerNavMeshAgent = GameObject.FindWithTag ("Player").GetComponent<NavMeshAgent> ();
+
+		InputManager.OnLMBDown += TryInteraction;
+
+		if (this.gameObject.GetComponent<LeverAnimator> () != null) 
+		{
+			StartInteraction = null;
+			StartInteraction = ChangeLeverState;
+		}
+		if (this.gameObject.GetComponent<ButtonAnimator> () != null) 
+		{
+			StartInteraction = null;
+			StartInteraction = ActivateButton;
+		}
 	}
 
 	/// <summary>
@@ -30,16 +46,56 @@ public class InteractableObject : MonoBehaviour
 		return false;
 	}
 
-	//Moves the player to the interaction position if the object was clicked.
-	void TryMoveToInteractionPosition()
+	void TryInteraction()
 	{
 		if (CheckClicked ()) 
 		{
-			//Do this without find!
-			Debug.Log (this.transform.name + " clicked!");
-			GameObject.FindWithTag ("Player").GetComponent<NavMeshAgent> ().destination = interactionPosition;
+			StopCoroutine ("TryInteractionCoroutine");
+			StartCoroutine ("TryInteractionCoroutine");
 		}
 	}
+
+	IEnumerator TryInteractionCoroutine()
+	{
+		MovePlayerToInteractionPosition ();
+		yield return new WaitForSeconds (0.1f);
+		while (playerNavMeshAgent.gameObject.GetComponent<CharacterMovementController> ().GetCurrentSpeed() > 0)
+		{
+			yield return null;
+		}
+		StartInteraction ();
+	}
+
+	//Moves the player to the interaction position.
+	void MovePlayerToInteractionPosition()
+	{
+		playerNavMeshAgent.destination = interactionPosition;
+	}
+
+	#region Interaction Methods
+	void ActivateButton()
+	{
+		StopCoroutine  ("PressButtonForSeconds");
+		StartCoroutine ("PressButtonForSeconds", BUTTONPRESSDURATION);
+		AudioManager.PlayClip (AudioManager.buttonClip);
+	}
+
+	void ChangeLeverState()
+	{
+		LeverAnimator leverTemp = GetComponent<LeverAnimator> ();
+
+		leverTemp.leverUp = !leverTemp.leverUp;
+		if (leverTemp.leverUp)  { AudioManager.PlayClip (AudioManager.leverUpClip); }
+		if (!leverTemp.leverUp) { AudioManager.PlayClip (AudioManager.leverDownClip); }
+	}
+
+	IEnumerator PressButtonForSeconds(float seconds)
+	{
+		GetComponent<ButtonAnimator> ().buttonPressed = true;
+		yield return new WaitForSeconds (seconds);
+		GetComponent<ButtonAnimator> ().buttonPressed = false;
+	}
+	#endregion
 
 	void OnDrawGizmos()
 	{

@@ -5,10 +5,25 @@ public class CharacterMovementController : MonoBehaviour
 {
 	NavMeshAgent agent;
 
+	//Speed recording stuff...
+	float currentSpeed;
+	Vector3 previousPosition;
+
 	void Start()
 	{
 		agent = GetComponent<NavMeshAgent> ();
 		InputManager.OnLMBDown += SetDestination;
+
+		//Initialize this stuff...
+		previousPosition = transform.position;
+		currentSpeed = 0f;
+	}
+
+	void Update()
+	{
+		currentSpeed = Vector3.Distance (transform.position, previousPosition);
+
+		previousPosition = transform.position;
 	}
 
 	void SetDestination()
@@ -19,7 +34,6 @@ public class CharacterMovementController : MonoBehaviour
 	//Gets the mouse position in world coordinates.
 	Vector3 GetMousePosition()
 	{
-		Vector3 result = Vector3.zero;
 		Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 		RaycastHit hit = new RaycastHit ();
 
@@ -30,5 +44,10 @@ public class CharacterMovementController : MonoBehaviour
 			return hit.point;
 		}
 		return agent.destination;
+	}
+
+	public float GetCurrentSpeed()
+	{
+		return currentSpeed;
 	}
 }
