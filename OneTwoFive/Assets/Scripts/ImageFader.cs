@@ -12,7 +12,6 @@ public class ImageFader : MonoBehaviour
 	void Start()
 	{
 		image = GetComponent<Image> ();
-		StartCoroutine (Fade (fadeTime, fadeValue));
 	}
 
 	public void Fade()

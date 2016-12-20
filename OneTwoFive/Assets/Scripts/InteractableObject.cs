@@ -12,6 +12,10 @@ public class InteractableObject : MonoBehaviour
 	private const float BUTTONPRESSDURATION = 2.5f;
 	private NavMeshAgent playerNavMeshAgent;
 
+	private int identifier; //This is used for identifying the source of sequence data entries.
+	public int GetIdentifier  ()          { return identifier; }
+	public void SetIdentifier (int value) { identifier = value; }
+
 	void Start()
 	{
 		playerNavMeshAgent = GameObject.FindWithTag ("Player").GetComponent<NavMeshAgent> ();
@@ -52,6 +56,10 @@ public class InteractableObject : MonoBehaviour
 		{
 			StopCoroutine ("TryInteractionCoroutine");
 			StartCoroutine ("TryInteractionCoroutine");
+		} 
+		else 
+		{
+			StopCoroutine ("TryInteractionCoroutine");
 		}
 	}
 
@@ -75,24 +83,39 @@ public class InteractableObject : MonoBehaviour
 	#region Interaction Methods
 	void ActivateButton()
 	{
-		StopCoroutine  ("PressButtonForSeconds");
-		StartCoroutine ("PressButtonForSeconds", BUTTONPRESSDURATION);
-		AudioManager.PlayClip (AudioManager.buttonClip);
+		if (!GetComponent<ButtonAnimator> ().buttonPressed) //Ensures that the button can't be pressed again while it's already down.
+		{
+			StopCoroutine ("PressButtonForSeconds");
+			StartCoroutine ("PressButtonForSeconds", BUTTONPRESSDURATION);
+			AudioManager.PlayClip (AudioManager.buttonClip);
+		}
 	}
 
 	void ChangeLeverState()
 	{
 		LeverAnimator leverTemp = GetComponent<LeverAnimator> ();
-
-		leverTemp.leverUp = !leverTemp.leverUp;
-		if (leverTemp.leverUp)  { AudioManager.PlayClip (AudioManager.leverUpClip); }
-		if (!leverTemp.leverUp) { AudioManager.PlayClip (AudioManager.leverDownClip); }
+		if (leverTemp.GetComponent<Animator> ().GetCurrentAnimatorStateInfo (0).normalizedTime >= .9999f) //Ensures that the lever can't be flipped without it finishing its animation.
+		{
+			leverTemp.leverUp = !leverTemp.leverUp;
+			if (leverTemp.leverUp)
+			{ 
+				AudioManager.PlayClip (AudioManager.leverUpClip); 
+				SequenceManager.GetSequenceReader ().AppendToSequence (new SequenceReader.SequenceData (identifier, (int)SequenceReader.EventIDs.leverFlippedUp));
+			}
+			if (!leverTemp.leverUp)
+			{ 
+				AudioManager.PlayClip (AudioManager.leverDownClip);
+				SequenceManager.GetSequenceReader ().AppendToSequence (new SequenceReader.SequenceData (identifier, (int)SequenceReader.EventIDs.leverFlippedDown));
+			}
+		}
 	}
 
 	IEnumerator PressButtonForSeconds(float seconds)
 	{
 		GetComponent<ButtonAnimator> ().buttonPressed = true;
+		SequenceManager.GetSequenceReader ().AppendToSequence (new SequenceReader.SequenceData (identifier, (int)SequenceReader.EventIDs.buttonPressed));
 		yield return new WaitForSeconds (seconds);
+		SequenceManager.GetSequenceReader ().AppendToSequence (new SequenceReader.SequenceData (identifier, (int)SequenceReader.EventIDs.buttonReleased));
 		GetComponent<ButtonAnimator> ().buttonPressed = false;
 	}
 	#endregion
