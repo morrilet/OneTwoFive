@@ -13,7 +13,7 @@ public class AudioManager : MonoBehaviour
 
 	private static AudioSource source;
 
-	void Start()
+	public void Start()
 	{
 		source = GetComponent<AudioSource> ();
 

@@ -31,6 +31,8 @@ public class SequenceManager : MonoBehaviour
 			{
 				OnSequenceMatch ();
 			}
+			reader.ClearSequence ();
+			sequenceMatch = false;
 		}
 	}
 

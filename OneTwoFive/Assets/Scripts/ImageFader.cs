@@ -9,7 +9,7 @@ public class ImageFader : MonoBehaviour
 	public float fadeValue;
 	Image image;
 
-	void Start()
+	public void Start()
 	{
 		image = GetComponent<Image> ();
 	}

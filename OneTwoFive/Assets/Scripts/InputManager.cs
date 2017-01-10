@@ -6,6 +6,7 @@ public class InputManager : MonoBehaviour
 	public delegate void KeyAction();
 	public static event KeyAction OnLeftDown;
 	public static event KeyAction OnRightDown;
+	public static event KeyAction OnActionDown;
 
 	public delegate void MouseAction();
 	public static event MouseAction OnLMBDown;
@@ -24,6 +25,14 @@ public class InputManager : MonoBehaviour
 			if (OnRightDown != null) 
 			{
 				OnRightDown ();
+			}
+		}
+
+		if (Input.GetKeyDown (KeyCode.Space)) 
+		{
+			if (OnActionDown != null) 
+			{
+				OnActionDown ();
 			}
 		}
 

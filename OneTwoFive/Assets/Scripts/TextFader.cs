@@ -9,7 +9,7 @@ public class TextFader : MonoBehaviour
 	public float fadeValue;
 	Text text;
 
-	void Start()
+	public void Start()
 	{
 		text = GetComponent<Text> ();
 	}
@@ -32,7 +32,7 @@ public class TextFader : MonoBehaviour
 		Color startColor = text.color;
 		Color tempColor = startColor;
 
-		while (timeCount < duration) 
+		while (timeCount < duration)
 		{
 			Debug.Log (fadeCurve.Evaluate(percentage));
 			percentage = timeCount / duration;
